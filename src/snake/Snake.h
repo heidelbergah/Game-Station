@@ -5,11 +5,14 @@
 #include <vector>
 #include <cmath>
 #include <iostream>
+#include <random>
 
 class Snake : public Game
 {
 private:
     const float PI = 3.141592654;
+
+    sf::CircleShape food;
 
     sf::CircleShape snakeHead;
     int snakeHeadRadius;
@@ -20,7 +23,6 @@ private:
     float snakeHeadVel;
     float snakeHeadRotation;
 
-
     std::vector<sf::CircleShape> snakeBody;
     std::vector<sf::Vector2f> snakeBodyPos;
     std::vector<int> snakeBodyRadii;
@@ -30,6 +32,10 @@ private:
     void connectSegment(int i, float xDiff, float yDiff, float difference);
 
     void addBodySegment(int radius);
+
+    void setFoodPosition();
+
+    bool snakeHeadCollideWithFood();
 public:
     Snake();
 

@@ -19,7 +19,6 @@ void Snake::addBodySegment(int radius)
     bodySegment.setFillColor(transparentColor);
     bodySegment.setOrigin(radius, radius);
 
-
     // Place the new segment directly behind the head or body segment in the direction
     // they're going. For example, if the head is moving left, place the new segment to the right
     // of the snake head.
@@ -48,6 +47,22 @@ void Snake::addBodySegment(int radius)
     snakeBodyLength++;
 }
 
+void Snake::setFoodPosition()
+{
+    food.setPosition((rand() % WIDTH) - food.getRadius() * 2, (rand() % HEIGHT) - food.getRadius() * 2);
+}
+
+bool Snake::snakeHeadCollideWithFood()
+{
+    float diffX = snakeHeadPos.x - food.getPosition().x;
+    float diffY = snakeHeadPos.y - food.getPosition().y;
+    float distance = std::sqrt(diffX * diffX + diffY * diffY);
+
+    if(distance < snakeHeadRadius + food.getRadius())
+        return true;
+    return false;
+}
+
 Snake::Snake() : Game()
 {
 
@@ -63,6 +78,11 @@ void Snake::initObjects()
     window.create(sf::VideoMode(WIDTH, HEIGHT), "Snake");
     window.setFramerateLimit(60);
 
+    food.setRadius(15);
+    food.setFillColor(sf::Color::Red);
+    food.setOrigin(15, 15);
+    setFoodPosition();
+        
     snakeHeadRadius = 20;
     snakeHeadColor = sf::Color::Green;
     transparentColor = sf::Color(0, 0, 0, 0);
@@ -150,6 +170,13 @@ void Snake::update()
         snakeBody[i].setPosition(snakeBodyPos[i]);
         snakeBody[i].setRotation(snakeBodyRotation[i]);
     }
+    
+    if(snakeHeadCollideWithFood())
+    {
+        for(int i = 0; i < 3; ++i)
+            addBodySegment(10);
+        setFoodPosition();
+    }
 
 }
 
@@ -161,5 +188,6 @@ void Snake::render()
     {
         window.draw(snakeBody[i]);
     }
+    window.draw(food);
     window.display();
 }
