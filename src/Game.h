@@ -10,6 +10,7 @@ protected:
     int WIDTH, HEIGHT, FPS;
     bool gameRunning;
 
+    sf::Joystick joystick;
 public:
     /**
      * Base constructor. Sets base values for member variables

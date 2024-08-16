@@ -1,44 +1,50 @@
 #include "Snake.h"
 
-void Snake::connectSegments(int i, int j, float xDiff, float yDiff, float difference)
+void Snake::connectSegment(int i, float xDiff, float yDiff, float difference)
 {
     float angle = std::atan2(-yDiff, xDiff);
 
-    snakeBodyPos[i].x -= cos(angle) * (difference / 2);
-    snakeBodyPos[i].y += sin(angle) * (difference / 2);
-    
-    snakeBodyPos[j].x += cos(angle) * (difference / 2);
-    snakeBodyPos[j].y -= sin(angle) * (difference / 2);
-}
-
-void Snake::connectSegments(int i, float xDiff, float yDiff, float difference)
-{
-    float angle = std::atan2(-yDiff, xDiff);
-
+    snakeBodyRotation[i] = angle;
     snakeBodyPos[i].x += cos(angle) * (difference);
     snakeBodyPos[i].y -= sin(angle) * (difference);
 }
 
 void Snake::addBodySegment(int radius)
 {
+    // Basic data setup
     sf::CircleShape bodySegment;
     bodySegment.setRadius(radius);
     bodySegment.setOutlineColor(snakeHeadColor);
-    bodySegment.setOutlineThickness(2);
+    bodySegment.setOutlineThickness(1);
     bodySegment.setFillColor(transparentColor);
     bodySegment.setOrigin(radius, radius);
 
+
+    // Place the new segment directly behind the head or body segment in the direction
+    // they're going. For example, if the head is moving left, place the new segment to the right
+    // of the snake head.
     sf::Vector2f pos;
+    float rotation = 0;
     if(snakeBodyLength == 0)
-        pos = sf::Vector2f(snakeHeadPos.x + radius, snakeHeadPos.y + radius);
+    {
+        rotation = snakeHeadRotation;
+        pos = sf::Vector2f(snakeHeadPos.x - cos(rotation) * radius * 2, snakeHeadPos.y + sin(rotation) * radius * 2);
+    }
     else
-        pos = sf::Vector2f(snakeBodyPos[snakeBodyLength-1].x + radius, snakeBodyPos[snakeBodyLength-1].y + radius);
+    {
+        rotation = snakeBodyRotation[snakeBodyLength-1];
+        pos = sf::Vector2f(snakeBodyPos[snakeBodyLength-1].x - cos(rotation) * radius * 2, snakeBodyPos[snakeBodyLength-1].y + sin(rotation) * radius * 2);
+    }
+
+    // Finish up data setup
+    bodySegment.setRotation(rotation);
     bodySegment.setPosition(pos);
 
     snakeBodyPos.push_back(pos);
     snakeBodyRadii.push_back(radius);
+    snakeBodyRotation.push_back(rotation);
     snakeBody.push_back(bodySegment);
-    
+
     snakeBodyLength++;
 }
 
@@ -61,16 +67,16 @@ void Snake::initObjects()
     snakeHeadColor = sf::Color::Green;
     transparentColor = sf::Color(0, 0, 0, 0);
     snakeHeadPos = sf::Vector2f(WIDTH / 2, HEIGHT / 2);
-    snakeHeadVel = sf::Vector2f(0, 0);
-
-    snakeHeadVel.x = 2; // Create an inital velocity for snake
+    snakeHeadVel = 2;
+    snakeHeadRotation = 0;
 
     snakeHead.setRadius(snakeHeadRadius);
     snakeHead.setOutlineColor(snakeHeadColor);
-    snakeHead.setOutlineThickness(2);
+    snakeHead.setOutlineThickness(1);
     snakeHead.setFillColor(transparentColor);
     snakeHead.setOrigin(snakeHeadRadius, snakeHeadRadius);
     snakeHead.setPosition(snakeHeadPos.x, snakeHeadPos.y);
+    snakeHead.setRotation(snakeHeadRotation);
 
     for(int i = 0; i < 3; ++i)
     {
@@ -94,26 +100,12 @@ void Snake::processInput()
         }
     }
 
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::W))
-    {
-        snakeHeadVel.y = -2;
-        snakeHeadVel.x = 0;
-    }
-    else if(sf::Keyboard::isKeyPressed(sf::Keyboard::S))
-    {
-        snakeHeadVel.y = 2;
-        snakeHeadVel.x = 0;
-    }
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::A))
-    {
-        snakeHeadVel.x = -2;
-        snakeHeadVel.y = 0;
-    }
+        snakeHeadRotation += 0.1;
     else if(sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-    {
-        snakeHeadVel.x = 2;
-        snakeHeadVel.y = 0;
-    }
+        snakeHeadRotation -= 0.1;
+
+    snakeHeadRotation -= joystick.getAxisPosition(0, sf::Joystick::X) / 1000;
 
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
     {
@@ -125,33 +117,29 @@ void Snake::processInput()
 void Snake::update()
 {
     // Update head position with velocity
-    snakeHeadPos.x += snakeHeadVel.x;
-    snakeHeadPos.y += snakeHeadVel.y;
+    snakeHeadPos.x += cos(snakeHeadRotation) * snakeHeadVel;
+    snakeHeadPos.y -= sin(snakeHeadRotation) * snakeHeadVel;
 
     // Chain the snake segments together
     // The more iterations, the smaller the gap between segments the longer the snake grows
-    int iterations = 5; 
-    for(int i = 0; i < iterations; ++i)
+    float xFactor = snakeHeadPos.x - snakeBodyPos[0].x;
+    float yFactor = snakeHeadPos.y - snakeBodyPos[0].y;
+    float distance = std::sqrt(xFactor * xFactor + yFactor * yFactor);
+    if(distance > snakeHeadRadius + snakeBodyRadii[0])
     {
-        float xFactor = snakeHeadPos.x - snakeBodyPos[0].x;
-        float yFactor = snakeHeadPos.y - snakeBodyPos[0].y;
-        float distance = std::sqrt(xFactor * xFactor + yFactor * yFactor);
-        if(distance > snakeHeadRadius + snakeBodyRadii[0])
-        {
-            float difference = distance - (snakeHeadRadius + snakeBodyRadii[0]);
-            connectSegments(0, xFactor, yFactor, difference);
-        }
+        float difference = distance - (snakeHeadRadius + snakeBodyRadii[0]);
+        connectSegment(0, xFactor, yFactor, difference);
+    }
 
-        for(int i = 0; i < snakeBodyLength-1; ++i)
+    for(int i = 0; i < snakeBodyLength-1; ++i)
+    {
+        float xFactor = snakeBodyPos[i].x - snakeBodyPos[i+1].x;
+        float yFactor = snakeBodyPos[i].y - snakeBodyPos[i+1].y;
+        float distance = std::sqrt(xFactor * xFactor + yFactor * yFactor);
+        if(distance > snakeBodyRadii[i] + snakeBodyRadii[i+1])
         {
-            float xFactor = snakeBodyPos[i].x - snakeBodyPos[i+1].x;
-            float yFactor = snakeBodyPos[i].y - snakeBodyPos[i+1].y;
-            float distance = std::sqrt(xFactor * xFactor + yFactor * yFactor);
-            if(distance > snakeBodyRadii[i] + snakeBodyRadii[i+1])
-            {
-                float difference = distance - (snakeBodyRadii[i] + snakeBodyRadii[i+1]);
-                connectSegments(i, i+1, xFactor, yFactor, difference);
-            }
+            float difference = distance - (snakeBodyRadii[i] + snakeBodyRadii[i+1]);
+            connectSegment(i+1, xFactor, yFactor, difference);
         }
     }
 
@@ -160,6 +148,7 @@ void Snake::update()
     for(int i = 0; i < snakeBodyLength; ++i)
     {
         snakeBody[i].setPosition(snakeBodyPos[i]);
+        snakeBody[i].setRotation(snakeBodyRotation[i]);
     }
 
 }

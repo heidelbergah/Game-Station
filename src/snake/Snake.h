@@ -16,15 +16,18 @@ private:
     sf::Color snakeHeadColor;
     sf::Color transparentColor;
     sf::Vector2f snakeHeadPos;
-    sf::Vector2f snakeHeadVel;
+    sf::Vector2f joystickAxis;
+    float snakeHeadVel;
+    float snakeHeadRotation;
+
 
     std::vector<sf::CircleShape> snakeBody;
     std::vector<sf::Vector2f> snakeBodyPos;
     std::vector<int> snakeBodyRadii;
+    std::vector<float> snakeBodyRotation;
     int snakeBodyLength;
 
-    void connectSegments(int i, int j, float xDiff, float yDiff, float difference);
-    void connectSegments(int i, float xDiff, float yDiff, float difference);
+    void connectSegment(int i, float xDiff, float yDiff, float difference);
 
     void addBodySegment(int radius);
 public:
