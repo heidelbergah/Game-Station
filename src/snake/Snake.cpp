@@ -49,7 +49,7 @@ void Snake::addBodySegment(int radius)
 
 void Snake::setFoodPosition()
 {
-    food.setPosition((rand() % WIDTH) - food.getRadius() * 2, (rand() % HEIGHT) - food.getRadius() * 2);
+    food.setPosition(rand() % WIDTH - (food.getRadius() * 2), rand() % HEIGHT - (food.getRadius() * 2));
 }
 
 bool Snake::snakeHeadCollideWithFood()
@@ -121,11 +121,11 @@ void Snake::processInput()
     }
 
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::A))
-        snakeHeadRotation += 0.1;
+        snakeHeadRotation += 0.05;
     else if(sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-        snakeHeadRotation -= 0.1;
+        snakeHeadRotation -= 0.05;
 
-    snakeHeadRotation -= joystick.getAxisPosition(0, sf::Joystick::X) / 1000;
+    snakeHeadRotation -= joystick.getAxisPosition(0, sf::Joystick::X) / 2000;
 
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
     {
