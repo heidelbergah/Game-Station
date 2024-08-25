@@ -11,9 +11,6 @@ void Snake::connectSegment(int i, float xDiff, float yDiff, float difference)
 
 void Snake::addBodySegment(int radius)
 {
-    // Add on another two points for each body segment
-    snakeOutline.setPointCount(snakeOutline.getPointCount() + 2);
-    
     // Basic data setup
     sf::CircleShape bodySegment;
     bodySegment.setRadius(radius);
@@ -96,32 +93,33 @@ bool Snake::snakeHeadCollideWithWall()
 
 void Snake::updateSnakeSides()
 {
+    sf::VertexArray newOutline(sf::LineStrip);
+
     snakeHeadSides[0] = sf::Vector2f(snakeHeadPos.x + cos(snakeHeadRotation + PI/2) * snakeHeadRadius, snakeHeadPos.y - sin(snakeHeadRotation + PI/2) * snakeHeadRadius);
     snakeHeadSides[1] = sf::Vector2f(snakeHeadPos.x + cos(snakeHeadRotation - PI/2) * snakeHeadRadius, snakeHeadPos.y - sin(snakeHeadRotation - PI/2) * snakeHeadRadius);
     for(int i = 0; i < snakeBodyLength; ++i)
     {
-        snakeBodySides[i] = {sf::Vector2f(snakeBodyPos[i].x + cos(snakeBodyRotation[i] + PI/2) * snakeBodyRadii[i], snakeBodyPos[i].y - sin(snakeBodyRotation[i] + PI/2) * snakeBodyRadii[i]), sf::Vector2f(snakeBodyPos[i].x + cos(snakeBodyRotation[i] - 90) * snakeBodyRadii[i], snakeBodyPos[i].y - sin(snakeBodyRotation[i] - 90) * snakeBodyRadii[i])};
+        snakeBodySides[i] = {sf::Vector2f(snakeBodyPos[i].x + cos(snakeBodyRotation[i] + PI/2) * snakeBodyRadii[i], snakeBodyPos[i].y - sin(snakeBodyRotation[i] + PI/2) * snakeBodyRadii[i]), sf::Vector2f(snakeBodyPos[i].x + cos(snakeBodyRotation[i] - PI/2) * snakeBodyRadii[i], snakeBodyPos[i].y - sin(snakeBodyRotation[i] - PI/2) * snakeBodyRadii[i])};
     }
 
     // Quickly update the snake eyes
-    snakeHeadEyes[0].setPosition(snakeHeadSides[0]);
-    snakeHeadEyes[1].setPosition(snakeHeadSides[1]);
+    float eyeAngle = PI/4;
+    snakeHeadEyes[0].setPosition(sf::Vector2f(snakeHeadPos.x + cos(snakeHeadRotation + eyeAngle) * snakeHeadRadius, snakeHeadPos.y - sin(snakeHeadRotation + eyeAngle) * snakeHeadRadius));
+    snakeHeadEyes[1].setPosition(sf::Vector2f(snakeHeadPos.x + cos(snakeHeadRotation - eyeAngle) * snakeHeadRadius, snakeHeadPos.y - sin(snakeHeadRotation - eyeAngle) * snakeHeadRadius));
 
-    // Create the convex shape
-    int pointCount = 1;
-    snakeOutline.setPoint(pointCount-1, snakeHeadSides[0]);
+    // Create the vertex array
+    newOutline.append(sf::Vertex(snakeHeadSides[0], snakeHeadColor));
     for(int i = 0; i < snakeBodyLength; ++i)
     {
-        snakeOutline.setPoint(pointCount, snakeBodySides[i][0]);
-        pointCount++;
+        newOutline.append(sf::Vertex(snakeBodySides[i][0], snakeHeadColor));
     }
     for(int i = snakeBodyLength-1; i >= 0; --i)
     {
-        snakeOutline.setPoint(pointCount, snakeBodySides[i][1]);
-        pointCount++;
+        newOutline.append(sf::Vertex(snakeBodySides[i][1], snakeHeadColor));
     }
-    snakeOutline.setPoint(pointCount++, snakeHeadSides[1]);
-    snakeOutline.setPoint(pointCount, snakeHeadSides[0]);
+    newOutline.append(sf::Vertex(snakeHeadSides[1], snakeHeadColor));
+    newOutline.append(sf::Vertex(snakeHeadSides[0], snakeHeadColor));
+    snakeOutline = newOutline;
 }
 
 Snake::Snake() : Game()
@@ -152,8 +150,6 @@ void Snake::initObjects()
     snakeHeadPos = sf::Vector2f(WIDTH / 2, HEIGHT / 2);
     snakeHeadVel = 2;
     snakeHeadRotation = 0;
-    snakeOutline.setPointCount(3); // One for both sides of the snake head, and one to wrap back around
-    snakeOutline.setFillColor(snakeHeadColor);
 
     // Create snake head
     snakeHead.setRadius(snakeHeadRadius);
@@ -275,9 +271,9 @@ void Snake::render()
     {
         window.draw(snakeBody[i]);
     }
-    window.draw(snakeOutline);
     window.draw(snakeHeadEyes[0]);
     window.draw(snakeHeadEyes[1]);
+    window.draw(snakeOutline);
     window.draw(food);
     window.display();
 }

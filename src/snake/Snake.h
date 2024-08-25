@@ -14,7 +14,7 @@ private:
 
     sf::CircleShape food;
 
-    sf::ConvexShape snakeOutline;
+    sf::VertexArray snakeOutline;
     sf::CircleShape snakeHead;
     int snakeHeadRadius;
     sf::Color snakeHeadColor;
