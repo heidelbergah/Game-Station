@@ -14,9 +14,12 @@ private:
 
     sf::CircleShape food;
 
+    sf::ConvexShape snakeOutline;
     sf::CircleShape snakeHead;
     int snakeHeadRadius;
     sf::Color snakeHeadColor;
+    std::vector<sf::Vector2f> snakeHeadSides;
+    std::vector<sf::CircleShape> snakeHeadEyes;
     sf::Color transparentColor;
     sf::Vector2f snakeHeadPos;
     sf::Vector2f joystickAxis;
@@ -27,6 +30,7 @@ private:
     std::vector<sf::Vector2f> snakeBodyPos;
     std::vector<int> snakeBodyRadii;
     std::vector<float> snakeBodyRotation;
+    std::vector<std::vector<sf::Vector2f>> snakeBodySides;
     int snakeBodyLength;
 
     void connectSegment(int i, float xDiff, float yDiff, float difference);
@@ -36,6 +40,12 @@ private:
     void setFoodPosition();
 
     bool snakeHeadCollideWithFood();
+    
+    bool snakeHeadCollideWithBody();
+    
+    bool snakeHeadCollideWithWall();
+
+    void updateSnakeSides();
 public:
     Snake();
 
