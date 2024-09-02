@@ -1,4 +1,5 @@
 #include "snake/Snake.h"
+#include "asteroids/Asteroids.h"
 #include <iostream>
 
 /* Main menu will be created in here. User can select game, and the currGame pointer
@@ -13,12 +14,13 @@ int main()
 {
     Game* currGame = nullptr;
 
-    currGame = new Snake(800, 800, 60);
+    currGame = new Asteroids(800, 800, 60);
 
     while(currGame->isGameRunning())
     {
         currGame->run();
     }
-    
+ 
+    delete currGame;
     currGame = nullptr;
 }
