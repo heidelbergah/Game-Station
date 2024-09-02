@@ -93,7 +93,7 @@ bool Snake::snakeHeadCollideWithWall()
 
 void Snake::updateSnakeSides()
 {
-    sf::VertexArray newOutline(sf::LineStrip);
+    sf::VertexArray newOutline(sf::TriangleStrip);
 
     snakeHeadSides[0] = sf::Vector2f(snakeHeadPos.x + cos(snakeHeadRotation + PI/2) * snakeHeadRadius, snakeHeadPos.y - sin(snakeHeadRotation + PI/2) * snakeHeadRadius);
     snakeHeadSides[1] = sf::Vector2f(snakeHeadPos.x + cos(snakeHeadRotation - PI/2) * snakeHeadRadius, snakeHeadPos.y - sin(snakeHeadRotation - PI/2) * snakeHeadRadius);
@@ -109,16 +109,12 @@ void Snake::updateSnakeSides()
 
     // Create the vertex array
     newOutline.append(sf::Vertex(snakeHeadSides[0], snakeHeadColor));
+    newOutline.append(sf::Vertex(snakeHeadSides[1], snakeHeadColor));
     for(int i = 0; i < snakeBodyLength; ++i)
     {
         newOutline.append(sf::Vertex(snakeBodySides[i][0], snakeHeadColor));
-    }
-    for(int i = snakeBodyLength-1; i >= 0; --i)
-    {
         newOutline.append(sf::Vertex(snakeBodySides[i][1], snakeHeadColor));
     }
-    newOutline.append(sf::Vertex(snakeHeadSides[1], snakeHeadColor));
-    newOutline.append(sf::Vertex(snakeHeadSides[0], snakeHeadColor));
     snakeOutline = newOutline;
 }
 
@@ -145,7 +141,7 @@ void Snake::initObjects()
         
     // Create snake head data
     snakeHeadRadius = 20;
-    snakeHeadColor = sf::Color::Green;
+    snakeHeadColor = sf::Color::Cyan;
     transparentColor = sf::Color(0, 0, 0, 0);
     snakeHeadPos = sf::Vector2f(WIDTH / 2, HEIGHT / 2);
     snakeHeadVel = 2;
@@ -267,10 +263,7 @@ void Snake::render()
 {
     window.clear(sf::Color::Black);
     window.draw(snakeHead);
-    for(int i = 0; i < snakeBodyLength; ++i)
-    {
-        window.draw(snakeBody[i]);
-    }
+    window.draw(snakeBody[snakeBodyLength-1]);
     window.draw(snakeHeadEyes[0]);
     window.draw(snakeHeadEyes[1]);
     window.draw(snakeOutline);
