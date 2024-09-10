@@ -18,6 +18,7 @@ Game::Game(int w, int h, int fps)
 
 void Game::initObjects()
 {
+    srand(time(NULL)); // Initialize new seed each time game console is opened
     window.create(sf::VideoMode(WIDTH, HEIGHT), "Game Engine");
     window.setFramerateLimit(FPS);
 }

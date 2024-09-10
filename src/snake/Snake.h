@@ -2,10 +2,6 @@
 #define SNAKE_H
 
 #include "../Game.h"
-#include <vector>
-#include <cmath>
-#include <iostream>
-#include <random>
 
 class Snake : public Game
 {

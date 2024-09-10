@@ -1,62 +1,28 @@
 #include "Asteroids.h"
-#include <cmath>
-
-float Asteroids::radiansToAdjustedDegrees(float radians)
-{
-    return (radians * 180 / PI) + 90;
-}
-
-void Asteroids::wrapAroundScreen(Spaceship &spaceship)
-{
-    if(player.pos.x > WIDTH)
-    {
-        player.pos.x = 0;
-    }
-    else if(player.pos.x < 0)
-    {
-        player.pos.x = WIDTH;
-    }
-    if(player.pos.y > HEIGHT)
-    {
-        player.pos.y = 0;
-    }
-    else if(player.pos.y < 0)
-    {
-        player.pos.y = HEIGHT;
-    }
-}
 
 Asteroids::Asteroids()
 {
-
+    startingAsteroidsNum = 4;
 }
 
 Asteroids::Asteroids(int w, int h, int fps) : Game(w, h, fps)
 {
-
+    startingAsteroidsNum = 4;
 }
 
 void Asteroids::initObjects()
 {
     window.create(sf::VideoMode(WIDTH, HEIGHT), "Asteroids");
     window.setFramerateLimit(60);
-    
-    player.radius = 10;
-    player.angle = 0;
-    player.acceleration = 0.1;
-    player.shape.setRadius(player.radius);
-    player.shape.setRotation(radiansToAdjustedDegrees(player.angle));
-    player.shape.setPointCount(3);
-    player.color = sf::Color::Red;
-    player.shape.setOutlineColor(player.color);
-    player.shape.setOutlineThickness(1);
-    player.shape.setFillColor(transparentColor);
 
-    player.shape.setOrigin(player.radius, player.radius);
-    player.pos.x = WIDTH / 2;
-    player.pos.y = HEIGHT / 2;
-    player.shape.setScale(1, 2);
-    player.shape.setPosition(player.pos);
+    Spaceship player(WIDTH, HEIGHT, PI);
+    players.push_back(player);
+
+    for(int i = 0; i < startingAsteroidsNum; ++i)
+    {
+        Asteroid asteroid(WIDTH, HEIGHT, PI);
+        asteroids.push_back(asteroid);
+    }
 }
 
 void Asteroids::processInput()
@@ -81,45 +47,42 @@ void Asteroids::update()
 {
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
     {
-        player.angle -= 0.1;
+        players[0].addToAngle(-0.1);
     }
     else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
     {
-        player.angle += 0.1;
+        players[0].addToAngle(0.1);
+
     }
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
     {
-        player.thrusting = true;
+        players[0].setThrusting(true);
     }
     else
     {
-        player.thrusting = false;
+        players[0].setThrusting(false);
     }
 
-    if(player.thrusting)
+    players[0].updateVelocity();
+    players[0].updatePosition();
+    
+    for(Asteroid& a : asteroids)
     {
-        player.vel.x += cos(player.angle) * player.acceleration;
-        player.vel.y -= sin(player.angle) * player.acceleration;
-    }
-    else
-    {
-        player.vel.x *= 0.99;
-        player.vel.y *= 0.99;
+        a.updatePosition();
     }
 
-    wrapAroundScreen(player);
-
-    player.pos.x += player.vel.x;
-    player.pos.y -= player.vel.y;
-
-    player.shape.setRotation(radiansToAdjustedDegrees(player.angle));
-    player.shape.setPosition(player.pos);
 }
 
 void Asteroids::render()
 {
     window.clear(transparentColor);
-    window.draw(player.shape);
+
+    for(Spaceship& p : players)
+        window.draw(p.getShape());
+    
+    for(Asteroid& a : asteroids)
+        window.draw(a.getShape());
+
     window.display();
 }
 

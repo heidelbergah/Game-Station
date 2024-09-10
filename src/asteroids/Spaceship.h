@@ -2,9 +2,15 @@
 #define SPACESHIP_H
 
 #include "SFML/Graphics.hpp"
+#include <cmath>
 
-struct Spaceship
+class Spaceship
 {
+private:
+    float PI;
+    int windowWidth;
+    int windowHeight;
+        
     sf::CircleShape shape;
     sf::Sprite sprite;
     sf::Color color;
@@ -18,6 +24,34 @@ struct Spaceship
 
     bool thrusting;
     bool canShoot;
+    
+    float radiansToAdjustedDegrees(float radians);
+
+    void wrapAroundScreen();
+public:
+    Spaceship(int w, int h, float pi);
+
+    /**
+     * Adds angle to the current value of spaceships angle
+     */
+    void addToAngle(float angle);
+
+    /**
+     * Set the value of thrusting
+     */
+    void setThrusting(bool thrusting);
+
+    /**
+     * Update the velocity of the spaceship
+     */
+    void updateVelocity();
+
+    /**
+     * Update the position of the spaceship
+     */
+    void updatePosition();
+
+    sf::CircleShape getShape() const;
 };
 
 #endif

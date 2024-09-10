@@ -2,6 +2,10 @@
 #define ENGINE_H
 
 #include <SFML/Graphics.hpp>
+#include <random>
+#include <vector>
+#include <cmath>
+#include <iostream>
 
 class Game
 {

@@ -11,7 +11,11 @@ private:
     const float PI = 3.141592654;
 
     sf::Color transparentColor = sf::Color::Black;
-    Spaceship player;
+    
+    std::vector<Spaceship> players;
+    std::vector<Asteroid> asteroids;
+
+    int startingAsteroidsNum;
 
     float radiansToAdjustedDegrees(float radians);
 
