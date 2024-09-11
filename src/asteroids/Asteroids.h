@@ -4,6 +4,7 @@
 #include "../Game.h"
 #include "Asteroid.h"
 #include "Spaceship.h"
+#include "Projectile.h"
 
 class Asteroids : public Game
 {
@@ -14,13 +15,16 @@ private:
     
     std::vector<Spaceship> players;
     std::vector<Asteroid> asteroids;
+    std::vector<Projectile> projectiles;
 
     int startingAsteroidsNum;
+    int currentWave;
 
-    float radiansToAdjustedDegrees(float radians);
+    void spawnAsteroids(int additionalAsteroids);
 
-    void wrapAroundScreen(Spaceship &spaceship);
+    void removeOutOfBoundsProjectiles();
 
+    void collisionResolutions();
 public:
 
     Asteroids();

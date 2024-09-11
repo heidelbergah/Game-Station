@@ -28,6 +28,7 @@ private:
     float radiansToAdjustedDegrees(float radians);
 
     void wrapAroundScreen();
+
 public:
     Spaceship(int w, int h, float pi);
 
@@ -50,6 +51,14 @@ public:
      * Update the position of the spaceship
      */
     void updatePosition();
+
+    sf::Vector2f getPos() const;
+
+    float getRadius() const;
+
+    float getAngle() const;
+
+    sf::Color getColor() const;
 
     sf::CircleShape getShape() const;
 };

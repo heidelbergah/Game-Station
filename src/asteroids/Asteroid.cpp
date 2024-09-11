@@ -65,6 +65,16 @@ void Asteroid::updatePosition()
     shape.setPosition(pos);
 }
 
+sf::Vector2f Asteroid::getPos() const
+{
+    return pos;
+}
+
+float Asteroid::getRadius() const
+{
+    return radius;
+}
+
 sf::CircleShape Asteroid::getShape() const
 {   
     return shape;

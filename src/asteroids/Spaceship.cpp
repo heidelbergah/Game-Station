@@ -86,6 +86,26 @@ void Spaceship::updatePosition()
     shape.setPosition(pos);
 }
 
+sf::Vector2f Spaceship::getPos() const
+{
+    return pos;
+}
+
+float Spaceship::getRadius() const
+{
+    return radius;
+}
+
+float Spaceship::getAngle() const
+{
+    return angle;
+}
+
+sf::Color Spaceship::getColor() const
+{
+    return color;
+}
+
 sf::CircleShape Spaceship::getShape() const
 {
     return shape;

@@ -30,6 +30,10 @@ public:
 
     void updatePosition();
 
+    sf::Vector2f getPos() const;
+
+    float getRadius() const;
+
     sf::CircleShape getShape() const;
 };
 
