@@ -30,7 +30,7 @@ void Snake::addBodySegment(int radius)
     else
     {
         rotation = snakeBodyRotation[snakeBodyLength-1];
-        pos = sf::Vector2f(snakeBodyPos[snakeBodyLength-1].x - cos(rotation) * radius * 2, snakeBodyPos[snakeBodyLength-1].y + sin(rotation) * radius * 2);
+        pos = sf::Vector2f(snakeBodyPos[snakeBodyLength-1].x - cos(rotation) * radius, snakeBodyPos[snakeBodyLength-1].y + sin(rotation) * radius);
     }
 
     // Finish up data setup
@@ -66,8 +66,8 @@ bool Snake::snakeHeadCollideWithFood()
 
 bool Snake::snakeHeadCollideWithBody()
 {
-    // Skip the first body segment because the snake head can never collide with it
-    for(int i = 1; i < snakeBodyPos.size(); ++i)
+    // Skip the first two body segment because the snake head can never collide with it
+    for(int i = 2; i < snakeBodyPos.size(); ++i)
     {
         float diffX = snakeHeadPos.x - snakeBodyPos[i].x;
         float diffY = snakeHeadPos.y - snakeBodyPos[i].y;
@@ -140,8 +140,8 @@ void Snake::initObjects()
     setFoodPosition();
         
     // Create snake head data
-    snakeHeadRadius = 20;
-    snakeHeadColor = sf::Color::Cyan;
+    snakeHeadRadius = 25;
+    snakeHeadColor = sf::Color::Magenta;
     transparentColor = sf::Color(0, 0, 0, 0);
     snakeHeadPos = sf::Vector2f(WIDTH / 2, HEIGHT / 2);
     snakeHeadVel = 2;
@@ -172,9 +172,9 @@ void Snake::initObjects()
     snakeHeadEyes[1].setOutlineColor(sf::Color::White);
 
     // Create snake body segments
-    for(int i = 0; i < 3; ++i)
+    for(int i = 0; i < 5; ++i)
     {
-        addBodySegment(snakeHeadRadius - (i+1) * 3);
+        addBodySegment(snakeHeadRadius - (i+1) * 2);
     }
 }
 
@@ -195,9 +195,9 @@ void Snake::processInput()
     }
 
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::A))
-        snakeHeadRotation += 0.05;
+        snakeHeadRotation += 0.03;
     else if(sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-        snakeHeadRotation -= 0.05;
+        snakeHeadRotation -= 0.03;
 
     snakeHeadRotation -= joystick.getAxisPosition(0, sf::Joystick::X) / 2000;
 
@@ -218,9 +218,9 @@ void Snake::update()
     float xFactor = snakeHeadPos.x - snakeBodyPos[0].x;
     float yFactor = snakeHeadPos.y - snakeBodyPos[0].y;
     float distance = std::sqrt(xFactor * xFactor + yFactor * yFactor);
-    if(distance > snakeHeadRadius + snakeBodyRadii[0])
+    if(distance > snakeHeadRadius)
     {
-        float difference = distance - (snakeHeadRadius + snakeBodyRadii[0]);
+        float difference = distance - (snakeHeadRadius);
         connectSegment(0, xFactor, yFactor, difference);
     }
 
@@ -229,9 +229,9 @@ void Snake::update()
         float xFactor = snakeBodyPos[i].x - snakeBodyPos[i+1].x;
         float yFactor = snakeBodyPos[i].y - snakeBodyPos[i+1].y;
         float distance = std::sqrt(xFactor * xFactor + yFactor * yFactor);
-        if(distance > snakeBodyRadii[i] + snakeBodyRadii[i+1])
+        if(distance > snakeBodyRadii[i])
         {
-            float difference = distance - (snakeBodyRadii[i] + snakeBodyRadii[i+1]);
+            float difference = distance - (snakeBodyRadii[i]);
             connectSegment(i+1, xFactor, yFactor, difference);
         }
     }
@@ -239,7 +239,7 @@ void Snake::update()
     if(snakeHeadCollideWithFood())
     {
         for(int i = 0; i < 3; ++i)
-            addBodySegment(10);
+            addBodySegment(snakeBody[snakeBody.size()-1].getRadius());
         setFoodPosition();
     }
 

@@ -4,7 +4,7 @@ void Asteroids::spawnAsteroids(int additionalAsteroids)
 {
     for(int i = 0; i < startingAsteroidsNum + additionalAsteroids; ++i)
     {
-        Asteroid asteroid(WIDTH, HEIGHT, PI);
+        Asteroid asteroid(WIDTH, HEIGHT, PI, 1);
         asteroids.push_back(asteroid);
     }
 }
@@ -48,10 +48,23 @@ void Asteroids::collisionResolutions()
 
             if(distance < projRadius + astRadius)
             {
+                int asteroidLevel = asteroids[j].getLevel();
+                sf::Vector2f asteroidPos = asteroids[j].getPos();
+
                 projectiles.erase(projectiles.begin() + i);
                 asteroids.erase(asteroids.begin() + j);
                 i--;
                 j--;
+                
+                if(asteroidLevel < 3)
+                {
+                    Asteroid asteroid1(WIDTH, HEIGHT, PI, asteroidLevel + 1);
+                    asteroid1.setPos(asteroidPos);
+                    asteroids.push_back(asteroid1);
+                    Asteroid asteroid2(WIDTH, HEIGHT, PI, asteroidLevel + 1);
+                    asteroid2.setPos(asteroidPos);
+                    asteroids.push_back(asteroid2);
+                }
             }
         }
     }
@@ -106,6 +119,8 @@ void Asteroids::initObjects()
 
 void Asteroids::processInput()
 {
+    sf::Time elapsedTime = clock.getElapsedTime();
+
     sf::Event event;
     while(window.pollEvent(event))
     {
@@ -138,10 +153,12 @@ void Asteroids::processInput()
         players[0].setThrusting(false);
     }
     
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
+    /** May want to enforce the user to click the space bar for each projectile... **/
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && elapsedTime.asMilliseconds() > 200)
     {
         Projectile p(players[0].getPos(), players[0].getAngle(), players[0].getColor());
         projectiles.push_back(p);
+        clock.restart();
     }
 
 }

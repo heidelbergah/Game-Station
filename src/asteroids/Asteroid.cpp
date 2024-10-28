@@ -25,13 +25,14 @@ void Asteroid::wrapAroundScreen()
     }
 }
 
-Asteroid::Asteroid(int w, int h, int pi)
+Asteroid::Asteroid(int w, int h, int pi, int l)
 {
     windowWidth = w;
     windowHeight = h;
     PI = pi;
+    level = l;
 
-    radius = 25;
+    radius = 32.f / level;
     angle = (rand() / (RAND_MAX + 1.)) * 2 * PI;
     totalVelocity = 3;
 
@@ -52,16 +53,17 @@ Asteroid::Asteroid(int w, int h, int pi)
     shape.setPosition(pos);
 }
 
-void Asteroid::updateVelocity()
-{
-    
-}
-
 void Asteroid::updatePosition()
 {
     pos.x += vel.x;
     pos.y -= vel.y;
     wrapAroundScreen();
+    shape.setPosition(pos);
+}
+
+void Asteroid::setPos(sf::Vector2f p)
+{
+    pos = p;
     shape.setPosition(pos);
 }
 
@@ -73,6 +75,11 @@ sf::Vector2f Asteroid::getPos() const
 float Asteroid::getRadius() const
 {
     return radius;
+}
+
+int Asteroid::getLevel() const
+{
+    return level;
 }
 
 sf::CircleShape Asteroid::getShape() const

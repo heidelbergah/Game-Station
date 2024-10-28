@@ -19,20 +19,25 @@ private:
     sf::Vector2f pos;
     sf::Vector2f vel;
     int totalVelocity;
+    // Level 1 is the largest of the asteroids, with each level higher being
+    // smaller, and more splitting from them.
+    int level;
 
     float radiansToAdjustedDegrees(float radians);
 
     void wrapAroundScreen();
 public:
-    Asteroid(int w, int h, int pi);
-
-    void updateVelocity();
+    Asteroid(int w, int h, int pi, int l);
 
     void updatePosition();
+
+    void setPos(sf::Vector2f p);
 
     sf::Vector2f getPos() const;
 
     float getRadius() const;
+
+    int getLevel() const;
 
     sf::CircleShape getShape() const;
 };

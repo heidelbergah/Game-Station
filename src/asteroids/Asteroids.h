@@ -12,7 +12,9 @@ private:
     const float PI = 3.141592654;
 
     sf::Color transparentColor = sf::Color::Black;
-    
+ 
+    sf::Clock clock;
+
     std::vector<Spaceship> players;
     std::vector<Asteroid> asteroids;
     std::vector<Projectile> projectiles;
