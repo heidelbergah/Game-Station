@@ -2,46 +2,23 @@
 #define SNAKE_H
 
 #include "../Game.h"
+#include "UserSnake.h"
 
 class Snake : public Game
 {
 private:
     const float PI = 3.141592654;
 
+    std::vector<UserSnake> snakes;
+
     sf::CircleShape food;
-
-    sf::VertexArray snakeOutline;
-    sf::CircleShape snakeHead;
-    int snakeHeadRadius;
-    sf::Color snakeHeadColor;
-    std::vector<sf::Vector2f> snakeHeadSides;
-    std::vector<sf::CircleShape> snakeHeadEyes;
-    sf::Color transparentColor;
-    sf::Vector2f snakeHeadPos;
-    sf::Vector2f joystickAxis;
-    float snakeHeadVel;
-    float snakeHeadRotation;
-
-    std::vector<sf::CircleShape> snakeBody;
-    std::vector<sf::Vector2f> snakeBodyPos;
-    std::vector<int> snakeBodyRadii;
-    std::vector<float> snakeBodyRotation;
-    std::vector<std::vector<sf::Vector2f>> snakeBodySides;
-    int snakeBodyLength;
-
-    void connectSegment(int i, float xDiff, float yDiff, float difference);
-
-    void addBodySegment(int radius);
 
     void setFoodPosition();
 
-    bool snakeHeadCollideWithFood();
+    void handleCollisionsWithFood();
     
-    bool snakeHeadCollideWithBody();
-    
-    bool snakeHeadCollideWithWall();
+    void handleCollisionsWithWall();
 
-    void updateSnakeSides();
 public:
     Snake();
 

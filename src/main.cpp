@@ -14,7 +14,7 @@ int main()
 {
     Game* currGame = nullptr;
 
-    currGame = new Asteroids(800, 800, 60);
+    currGame = new Snake(800, 800, 60);
 
     while(currGame->isGameRunning())
     {

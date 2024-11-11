@@ -1,122 +1,73 @@
 #include "Snake.h"
 
-void Snake::connectSegment(int i, float xDiff, float yDiff, float difference)
-{
-    float angle = std::atan2(-yDiff, xDiff);
-
-    snakeBodyRotation[i] = angle;
-    snakeBodyPos[i].x += cos(angle) * (difference);
-    snakeBodyPos[i].y -= sin(angle) * (difference);
-}
-
-void Snake::addBodySegment(int radius)
-{
-    // Basic data setup
-    sf::CircleShape bodySegment;
-    bodySegment.setRadius(radius);
-    bodySegment.setFillColor(snakeHeadColor);
-    bodySegment.setOrigin(radius, radius);
-
-    // Place the new segment directly behind the head or body segment in the direction
-    // they're going. For example, if the head is moving left, place the new segment to the right
-    // of the snake head.
-    sf::Vector2f pos;
-    float rotation = 0;
-    if(snakeBodyLength == 0)
-    {
-        rotation = snakeHeadRotation;
-        pos = sf::Vector2f(snakeHeadPos.x - cos(rotation) * radius * 2, snakeHeadPos.y + sin(rotation) * radius * 2);
-    }
-    else
-    {
-        rotation = snakeBodyRotation[snakeBodyLength-1];
-        pos = sf::Vector2f(snakeBodyPos[snakeBodyLength-1].x - cos(rotation) * radius, snakeBodyPos[snakeBodyLength-1].y + sin(rotation) * radius);
-    }
-
-    // Finish up data setup
-    bodySegment.setRotation(rotation);
-    bodySegment.setPosition(pos);
-
-    snakeBodyPos.push_back(pos);
-    snakeBodyRadii.push_back(radius);
-    snakeBodyRotation.push_back(rotation);
-    snakeBody.push_back(bodySegment);
-    std::vector sides = {sf::Vector2f(pos.x + cos(rotation + PI/2) * radius, pos.y - sin(rotation + PI/2) * radius), sf::Vector2f(pos.x + cos(rotation + PI/2) * radius, pos.y - sin(rotation + PI/2) * radius)};
-    snakeBodySides.push_back(sides);
-
-    snakeBodyLength++;
-}
-
 void Snake::setFoodPosition()
 {
     int offset = food.getRadius() * 2;
-    food.setPosition(rand() % (WIDTH - offset) + (offset), rand() % (HEIGHT - offset) + (offset));
-}
+    sf::Vector2f foodPosition;
+    bool positionFound = false;
 
-bool Snake::snakeHeadCollideWithFood()
-{
-    float diffX = snakeHeadPos.x - food.getPosition().x;
-    float diffY = snakeHeadPos.y - food.getPosition().y;
-    float distance = std::sqrt(diffX * diffX + diffY * diffY);
-
-    if(distance < snakeHeadRadius + food.getRadius())
-        return true;
-    return false;
-}
-
-bool Snake::snakeHeadCollideWithBody()
-{
-    // Skip the first two body segment because the snake head can never collide with it
-    for(int i = 2; i < snakeBodyPos.size(); ++i)
+    while(!positionFound)
     {
-        float diffX = snakeHeadPos.x - snakeBodyPos[i].x;
-        float diffY = snakeHeadPos.y - snakeBodyPos[i].y;
+        foodPosition = sf::Vector2f(rand() % (WIDTH - offset) + (offset), rand() % (HEIGHT - offset) + (offset));
+        positionFound = true;
+
+        for(int i = 0; i < snakes.size(); ++i)
+        {
+            for(int j = 0; j < snakes[i].getBody().size(); ++j)
+            {
+                float diffX = foodPosition.x - snakes[i].getBody()[j].pos.x;
+                float diffY = foodPosition.y - snakes[i].getBody()[j].pos.y;
+                float distance = std::sqrt(diffX * diffX + diffY * diffY);
+                if(distance < food.getRadius() + snakes[i].getBody()[j].radius)
+                {
+                    positionFound = false;
+                    i = snakes.size();
+                    break;
+                }
+            }
+        }
+    }
+
+    food.setPosition(foodPosition);
+}
+
+void Snake::handleCollisionsWithFood()
+{
+    for(UserSnake& us : snakes)
+    {
+        float diffX = us.getHead().pos.x - food.getPosition().x;
+        float diffY = us.getHead().pos.y - food.getPosition().y;
         float distance = std::sqrt(diffX * diffX + diffY * diffY);
-        if(distance < snakeHeadRadius + snakeBodyRadii[i])
-            return true;
+
+        if(distance < us.getHead().radius + food.getRadius())
+        {
+            setFoodPosition();
+            for(int i = 0; i < 5; ++i)
+                us.addSegment(us.getLastSegment().radius);
+        }
     }
-    return false;
 }
 
-bool Snake::snakeHeadCollideWithWall()
+
+void Snake::handleCollisionsWithWall()
 {
-    if(snakeHeadPos.x + snakeHeadRadius > WIDTH)
-        return true;
-    else if(snakeHeadPos.x - snakeHeadRadius < 0)
-        return true;
-    else if(snakeHeadPos.y - snakeHeadRadius < 0)
-        return true;
-    else if(snakeHeadPos.y + snakeHeadRadius > HEIGHT)
-        return true;
-    return false;
+    for(UserSnake& us : snakes)
+    {
+        bool collision = false;
+        if(us.getHead().pos.x + us.getHead().radius > WIDTH)
+            collision = true;
+        else if(us.getHead().pos.x - us.getHead().radius < 0)
+            collision = true;
+        else if(us.getHead().pos.y - us.getHead().radius < 0)
+            collision = true;
+        else if(us.getHead().pos.y + us.getHead().radius > HEIGHT)
+            collision = true;
+
+        if(collision)
+            window.close();
+    }
 }
 
-void Snake::updateSnakeSides()
-{
-    sf::VertexArray newOutline(sf::TriangleStrip);
-
-    snakeHeadSides[0] = sf::Vector2f(snakeHeadPos.x + cos(snakeHeadRotation + PI/2) * snakeHeadRadius, snakeHeadPos.y - sin(snakeHeadRotation + PI/2) * snakeHeadRadius);
-    snakeHeadSides[1] = sf::Vector2f(snakeHeadPos.x + cos(snakeHeadRotation - PI/2) * snakeHeadRadius, snakeHeadPos.y - sin(snakeHeadRotation - PI/2) * snakeHeadRadius);
-    for(int i = 0; i < snakeBodyLength; ++i)
-    {
-        snakeBodySides[i] = {sf::Vector2f(snakeBodyPos[i].x + cos(snakeBodyRotation[i] + PI/2) * snakeBodyRadii[i], snakeBodyPos[i].y - sin(snakeBodyRotation[i] + PI/2) * snakeBodyRadii[i]), sf::Vector2f(snakeBodyPos[i].x + cos(snakeBodyRotation[i] - PI/2) * snakeBodyRadii[i], snakeBodyPos[i].y - sin(snakeBodyRotation[i] - PI/2) * snakeBodyRadii[i])};
-    }
-
-    // Quickly update the snake eyes
-    float eyeAngle = PI/4;
-    snakeHeadEyes[0].setPosition(sf::Vector2f(snakeHeadPos.x + cos(snakeHeadRotation + eyeAngle) * snakeHeadRadius, snakeHeadPos.y - sin(snakeHeadRotation + eyeAngle) * snakeHeadRadius));
-    snakeHeadEyes[1].setPosition(sf::Vector2f(snakeHeadPos.x + cos(snakeHeadRotation - eyeAngle) * snakeHeadRadius, snakeHeadPos.y - sin(snakeHeadRotation - eyeAngle) * snakeHeadRadius));
-
-    // Create the vertex array
-    newOutline.append(sf::Vertex(snakeHeadSides[0], snakeHeadColor));
-    newOutline.append(sf::Vertex(snakeHeadSides[1], snakeHeadColor));
-    for(int i = 0; i < snakeBodyLength; ++i)
-    {
-        newOutline.append(sf::Vertex(snakeBodySides[i][0], snakeHeadColor));
-        newOutline.append(sf::Vertex(snakeBodySides[i][1], snakeHeadColor));
-    }
-    snakeOutline = newOutline;
-}
 
 Snake::Snake() : Game()
 {
@@ -138,44 +89,20 @@ void Snake::initObjects()
     food.setFillColor(sf::Color::Red);
     food.setOrigin(15, 15);
     setFoodPosition();
-        
-    // Create snake head data
-    snakeHeadRadius = 25;
-    snakeHeadColor = sf::Color::Magenta;
-    transparentColor = sf::Color(0, 0, 0, 0);
-    snakeHeadPos = sf::Vector2f(WIDTH / 2, HEIGHT / 2);
-    snakeHeadVel = 2;
-    snakeHeadRotation = 0;
-
-    // Create snake head
-    snakeHead.setRadius(snakeHeadRadius);
-    snakeHead.setFillColor(snakeHeadColor);
-    snakeHead.setOrigin(snakeHeadRadius, snakeHeadRadius);
-    snakeHead.setPosition(snakeHeadPos.x, snakeHeadPos.y);
-    snakeHead.setRotation(snakeHeadRotation);
-    snakeHeadSides.push_back(sf::Vector2f(snakeHeadPos.x + cos(snakeHeadRotation + PI/2) * snakeHeadRadius, snakeHeadPos.y - sin(snakeHeadRotation + PI/2) * snakeHeadRadius));
-    snakeHeadSides.push_back(sf::Vector2f(snakeHeadPos.x + cos(snakeHeadRotation - PI/2) * snakeHeadRadius, snakeHeadPos.y - sin(snakeHeadRotation - PI/2) * snakeHeadRadius));
-
-    // Create snake eyes
-    int eyeSize = 4;
-    snakeHeadEyes.push_back(sf::CircleShape(eyeSize));
-    snakeHeadEyes.push_back(sf::CircleShape(eyeSize));
-    snakeHeadEyes[0].setOrigin(eyeSize, eyeSize);
-    snakeHeadEyes[0].setPosition(snakeHeadSides[0]);
-    snakeHeadEyes[0].setFillColor(sf::Color::Black);
-    snakeHeadEyes[0].setOutlineThickness(2);
-    snakeHeadEyes[0].setOutlineColor(sf::Color::White);
-    snakeHeadEyes[1].setOrigin(eyeSize, eyeSize);
-    snakeHeadEyes[1].setPosition(snakeHeadSides[1]);
-    snakeHeadEyes[1].setFillColor(sf::Color::Black);
-    snakeHeadEyes[1].setOutlineThickness(2);
-    snakeHeadEyes[1].setOutlineColor(sf::Color::White);
+ 
+    // Snake data
+    Segment head;
+    head.radius = 25;
+    head.color = sf::Color::Cyan;
+    head.pos = sf::Vector2f(WIDTH / 2, HEIGHT / 2);
+    head.rotation = 0;
+    UserSnake newSnake(head);
+    snakes.push_back(newSnake);
 
     // Create snake body segments
     for(int i = 0; i < 5; ++i)
-    {
-        addBodySegment(snakeHeadRadius - (i+1) * 2);
-    }
+        for(UserSnake& s : snakes)
+            s.addSegment(head.radius - (i+1) * 2);
 }
 
 void Snake::processInput()
@@ -195,78 +122,52 @@ void Snake::processInput()
     }
 
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::A))
-        snakeHeadRotation += 0.03;
+        for(UserSnake& us : snakes)
+            us.updateRotation(0.03);
     else if(sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-        snakeHeadRotation -= 0.03;
+        for(UserSnake& us : snakes)
+            us.updateRotation(-0.03);
 
-    snakeHeadRotation -= joystick.getAxisPosition(0, sf::Joystick::X) / 2000;
+    for(int i = 0; i < snakes.size(); ++i)
+    {
+        snakes[i].updateRotation(-joystick.getAxisPosition(i, sf::Joystick::X) / 2000);
+    }
 
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
     {
-        addBodySegment(10);
+        for(UserSnake& us : snakes)
+            us.addSegment(10);
     }
 }
 
 void Snake::update()
 {
-    // Update head position with velocity
-    snakeHeadPos.x += cos(snakeHeadRotation) * snakeHeadVel;
-    snakeHeadPos.y -= sin(snakeHeadRotation) * snakeHeadVel;
-
-    // Chain the snake segments together
-    // The more iterations, the smaller the gap between segments the longer the snake grows
-    float xFactor = snakeHeadPos.x - snakeBodyPos[0].x;
-    float yFactor = snakeHeadPos.y - snakeBodyPos[0].y;
-    float distance = std::sqrt(xFactor * xFactor + yFactor * yFactor);
-    if(distance > snakeHeadRadius)
+    handleCollisionsWithFood();
+    handleCollisionsWithWall();
+    for(UserSnake& us : snakes)
     {
-        float difference = distance - (snakeHeadRadius);
-        connectSegment(0, xFactor, yFactor, difference);
-    }
-
-    for(int i = 0; i < snakeBodyLength-1; ++i)
-    {
-        float xFactor = snakeBodyPos[i].x - snakeBodyPos[i+1].x;
-        float yFactor = snakeBodyPos[i].y - snakeBodyPos[i+1].y;
-        float distance = std::sqrt(xFactor * xFactor + yFactor * yFactor);
-        if(distance > snakeBodyRadii[i])
+        us.update();
+        if(us.collisionWithBody())
         {
-            float difference = distance - (snakeBodyRadii[i]);
-            connectSegment(i+1, xFactor, yFactor, difference);
+            us.kill();
+            window.close();
         }
     }
-
-    if(snakeHeadCollideWithFood())
-    {
-        for(int i = 0; i < 3; ++i)
-            addBodySegment(snakeBody[snakeBody.size()-1].getRadius());
-        setFoodPosition();
-    }
-
-    if(snakeHeadCollideWithBody() || snakeHeadCollideWithWall())
-    {
-        gameRunning = false;
-    }
-
-    // Set official positions
-    snakeHead.setPosition(snakeHeadPos.x, snakeHeadPos.y);
-    for(int i = 0; i < snakeBodyLength; ++i)
-    {
-        snakeBody[i].setPosition(snakeBodyPos[i]);
-        snakeBody[i].setRotation(snakeBodyRotation[i]);
-    }
-
-    updateSnakeSides();
 }
 
 void Snake::render()
 {
     window.clear(sf::Color::Black);
-    window.draw(snakeHead);
-    window.draw(snakeBody[snakeBodyLength-1]);
-    window.draw(snakeHeadEyes[0]);
-    window.draw(snakeHeadEyes[1]);
-    window.draw(snakeOutline);
+
+    for(UserSnake& us : snakes)
+    {
+        window.draw(us.getHead().shape);
+        window.draw(us.getLastSegment().shape);
+        window.draw(us.getLeftEye());
+        window.draw(us.getRightEye());
+        window.draw(us.getOutline());
+    }
+
     window.draw(food);
     window.display();
 }
