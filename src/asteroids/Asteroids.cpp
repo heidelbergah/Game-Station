@@ -5,6 +5,9 @@ void Asteroids::spawnAsteroids(int additionalAsteroids)
     for(int i = 0; i < startingAsteroidsNum + additionalAsteroids; ++i)
     {
         Asteroid asteroid(WIDTH, HEIGHT, PI, 1);
+        int ati = rand() % 6; // ati = asteroid texture index
+        sf::IntRect ir((32 * ati), 0, 32, 32);
+        asteroid.setTexture(asteroidsTexture, ir);
         asteroids.push_back(asteroid);
     }
 }
@@ -58,11 +61,16 @@ void Asteroids::collisionResolutions()
                 
                 if(asteroidLevel < 3)
                 {
+                    int ati = rand() % 6; // ati = asteroid texture index
+                    sf::IntRect ir((32 * ati), 0, 32, 32);
+                    
                     Asteroid asteroid1(WIDTH, HEIGHT, PI, asteroidLevel + 1);
                     asteroid1.setPos(asteroidPos);
+                    asteroid1.setTexture(asteroidsTexture, ir);
                     asteroids.push_back(asteroid1);
                     Asteroid asteroid2(WIDTH, HEIGHT, PI, asteroidLevel + 1);
                     asteroid2.setPos(asteroidPos);
+                    asteroid2.setTexture(asteroidsTexture, ir);
                     asteroids.push_back(asteroid2);
                 }
             }
@@ -111,7 +119,11 @@ void Asteroids::initObjects()
     window.create(sf::VideoMode(WIDTH, HEIGHT), "Asteroids");
     window.setFramerateLimit(60);
 
-    Spaceship player(WIDTH, HEIGHT, PI);
+    asteroidsTexture.loadFromFile("asteroids/assets/asteroids.png");
+    spaceshipsTexture.loadFromFile("asteroids/assets/spaceships.png");
+
+    Spaceship player(WIDTH, HEIGHT, PI, sf::Color::Green);
+    player.setTexture(spaceshipsTexture, sf::IntRect(0, 0, 32, 32));
     players.push_back(player);
 
     spawnAsteroids(0);
@@ -200,10 +212,10 @@ void Asteroids::render()
     window.clear(transparentColor);
 
     for(Spaceship& p : players)
-        window.draw(p.getShape());
+        window.draw(p.getSprite());
     
     for(Asteroid& a : asteroids)
-        window.draw(a.getShape());
+        window.draw(a.getSprite());
 
     for(Projectile& p : projectiles)
         window.draw(p.getShape());

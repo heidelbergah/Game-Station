@@ -25,28 +25,24 @@ void Spaceship::wrapAroundScreen()
     }
 }
 
-Spaceship::Spaceship(int w, int h, float pi)
+Spaceship::Spaceship(int w, int h, float pi, sf::Color c)
 {
     PI = pi;
     windowWidth = w;
     windowHeight = h;
 
-    radius = 10;
+    radius = 16;
     angle = 0;
     acceleration = 0.1;
-    shape.setRadius(radius);
-    shape.setRotation(radiansToAdjustedDegrees(angle));
-    shape.setPointCount(3);
-    color = sf::Color::Red;
-    shape.setOutlineColor(color);
-    shape.setOutlineThickness(1);
-    shape.setFillColor(sf::Color::Black);
+    sprite.setRotation(radiansToAdjustedDegrees(angle));
 
-    shape.setOrigin(radius, radius);
+    color = c;
+    sprite.setColor(color);
+
+    sprite.setOrigin(radius, radius);
     pos.x = windowWidth / 2;
     pos.y = windowHeight / 2;
-    shape.setScale(1, 2);
-    shape.setPosition(pos);
+    sprite.setPosition(pos);
 
     thrusting = false;
 }
@@ -82,8 +78,8 @@ void Spaceship::updatePosition()
     pos.x += vel.x;
     pos.y -= vel.y;
 
-    shape.setRotation(radiansToAdjustedDegrees(angle));
-    shape.setPosition(pos);
+    sprite.setRotation(radiansToAdjustedDegrees(angle));
+    sprite.setPosition(pos);
 }
 
 sf::Vector2f Spaceship::getPos() const
@@ -106,7 +102,14 @@ sf::Color Spaceship::getColor() const
     return color;
 }
 
-sf::CircleShape Spaceship::getShape() const
+    
+void Spaceship::setTexture(sf::Texture& text, sf::IntRect ir)
 {
-    return shape;
+    sprite.setTexture(text);
+    sprite.setTextureRect(ir);
+}
+
+sf::Sprite Spaceship::getSprite() const
+{
+    return sprite;
 }

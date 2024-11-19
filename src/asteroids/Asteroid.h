@@ -12,7 +12,6 @@ private:
     int windowWidth;
     int windowHeight;
 
-    sf::CircleShape shape;
     sf::Sprite sprite;
     float radius;
     float angle;
@@ -39,7 +38,9 @@ public:
 
     int getLevel() const;
 
-    sf::CircleShape getShape() const;
+    void setTexture(sf::Texture& text, sf::IntRect ir);
+    
+    sf::Sprite getSprite() const;
 };
 
 #endif

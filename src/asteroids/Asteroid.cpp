@@ -1,4 +1,5 @@
 #include "Asteroid.h"
+#include <iostream>
 
 float Asteroid::radiansToAdjustedDegrees(float radians)
 {
@@ -32,16 +33,14 @@ Asteroid::Asteroid(int w, int h, int pi, int l)
     PI = pi;
     level = l;
 
-    radius = 32.f / level;
+    float scale = 4 - level;
+    radius = 16 * scale;
     angle = (rand() / (RAND_MAX + 1.)) * 2 * PI;
     totalVelocity = 3;
 
-    shape.setRadius(radius);
-    shape.setRotation(radiansToAdjustedDegrees(angle));
-    shape.setOutlineColor(sf::Color::White);
-    shape.setOutlineThickness(1);
-    shape.setFillColor(sf::Color::Black);
-    shape.setOrigin(radius, radius);
+    sprite.setOrigin(16, 16);
+    sprite.setScale(scale, scale);
+    sprite.setRotation(radiansToAdjustedDegrees(angle));
     
     // Update to cos and sin
     vel.x = cos(angle) * totalVelocity;
@@ -50,7 +49,7 @@ Asteroid::Asteroid(int w, int h, int pi, int l)
     pos.x = rand() % windowWidth;
     pos.y = rand() % windowHeight;
 
-    shape.setPosition(pos);
+    sprite.setPosition(pos);
 }
 
 void Asteroid::updatePosition()
@@ -58,13 +57,13 @@ void Asteroid::updatePosition()
     pos.x += vel.x;
     pos.y -= vel.y;
     wrapAroundScreen();
-    shape.setPosition(pos);
+    sprite.setPosition(pos);
 }
 
 void Asteroid::setPos(sf::Vector2f p)
 {
     pos = p;
-    shape.setPosition(pos);
+    sprite.setPosition(pos);
 }
 
 sf::Vector2f Asteroid::getPos() const
@@ -82,7 +81,13 @@ int Asteroid::getLevel() const
     return level;
 }
 
-sf::CircleShape Asteroid::getShape() const
-{   
-    return shape;
+void Asteroid::setTexture(sf::Texture& text, sf::IntRect ir)
+{
+    sprite.setTexture(text);
+    sprite.setTextureRect(ir);
+}
+
+sf::Sprite Asteroid::getSprite() const
+{
+    return sprite;
 }

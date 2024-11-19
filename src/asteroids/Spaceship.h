@@ -11,7 +11,6 @@ private:
     int windowWidth;
     int windowHeight;
         
-    sf::CircleShape shape;
     sf::Sprite sprite;
     sf::Color color;
     float radius;
@@ -30,7 +29,7 @@ private:
     void wrapAroundScreen();
 
 public:
-    Spaceship(int w, int h, float pi);
+    Spaceship(int w, int h, float pi, sf::Color color);
 
     /**
      * Adds angle to the current value of spaceships angle
@@ -60,7 +59,9 @@ public:
 
     sf::Color getColor() const;
 
-    sf::CircleShape getShape() const;
+    void setTexture(sf::Texture& text, sf::IntRect ir);
+
+    sf::Sprite getSprite() const;
 };
 
 #endif

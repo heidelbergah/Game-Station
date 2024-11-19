@@ -15,6 +15,9 @@ private:
  
     sf::Clock clock;
 
+    sf::Texture asteroidsTexture;
+    sf::Texture spaceshipsTexture;
+
     std::vector<Spaceship> players;
     std::vector<Asteroid> asteroids;
     std::vector<Projectile> projectiles;
@@ -27,6 +30,7 @@ private:
     void removeOutOfBoundsProjectiles();
 
     void collisionResolutions();
+
 public:
 
     Asteroids();
