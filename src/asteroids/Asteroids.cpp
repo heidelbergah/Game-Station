@@ -117,7 +117,7 @@ Asteroids::Asteroids(int w, int h, int fps) : Game(w, h, fps)
 void Asteroids::initObjects()
 {
     window.create(sf::VideoMode(WIDTH, HEIGHT), "Asteroids");
-    window.setFramerateLimit(60);
+    window.setFramerateLimit(FPS);
 
     asteroidsTexture.loadFromFile("asteroids/assets/asteroids.png");
     spaceshipsTexture.loadFromFile("asteroids/assets/spaceships.png");
